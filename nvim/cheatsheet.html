@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neovim Cheat Sheet</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11111b;
+      --panel: #181825;
+      --panel-2: #1e1e2e;
+      --text: #cdd6f4;
+      --muted: #a6adc8;
+      --accent: #89b4fa;
+      --green: #a6e3a1;
+      --red: #f38ba8;
+      --yellow: #f9e2af;
+      --border: #313244;
+      --key-bg: #313244;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(137, 180, 250, 0.12), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font: 12px/1.25 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      width: calc(100% - 20px);
+      height: 100vh;
+      margin: 0 auto;
+      padding: 10px 0;
+    }
+
+    header {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 8px;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(24, 24, 37, 0.88);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1;
+      letter-spacing: -0.025em;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .leader {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      flex: 1 1 auto;
+      min-height: 0;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-areas:
+        "lsp oil notebook notebook essentials essentials"
+        "telescope autocomplete latex git marks folds";
+      grid-template-rows: auto 1fr;
+      gap: 8px;
+    }
+
+    section {
+      break-inside: avoid;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(24, 24, 37, 0.9);
+    }
+
+    section:nth-child(1) { grid-area: telescope; }
+    section:nth-child(2) { grid-area: oil; }
+    section:nth-child(3) { grid-area: notebook; }
+    section:nth-child(4) { grid-area: lsp; }
+    section:nth-child(5) { grid-area: autocomplete; }
+    section:nth-child(6) { grid-area: git; }
+    section:nth-child(7) { grid-area: marks; }
+    section:nth-child(8) { grid-area: folds; }
+    section:nth-child(9) { grid-area: essentials; }
+    section:nth-child(10) { grid-area: latex; }
+
+    h2 {
+      margin: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--accent);
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    tr:not(:last-child) { border-bottom: 1px solid var(--border); }
+
+    td {
+      padding: 4px 7px;
+      vertical-align: top;
+    }
+
+    td:first-child {
+      width: 42%;
+      white-space: nowrap;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 1.8em;
+      margin: 0 1px;
+      padding: 1px 5px;
+      border: 1px solid #45475a;
+      border-bottom-width: 3px;
+      border-radius: 7px;
+      background: var(--key-bg);
+      color: var(--text);
+      font: 600 0.78rem ui-monospace, SFMono-Regular, Menlo, monospace;
+      text-align: center;
+    }
+
+    code {
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .note {
+      margin: 0;
+      padding: 6px 9px 7px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .symbol {
+      display: inline-block;
+      min-width: 1.5em;
+      color: var(--yellow);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    footer {
+      display: none;
+      margin-top: 8px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1200px) {
+      body { height: auto; overflow: auto; }
+      main { width: min(760px, calc(100% - 20px)); height: auto; }
+      header { align-items: flex-start; flex-direction: column; gap: 4px; }
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas: none;
+        grid-template-rows: none;
+      }
+      section:nth-child(n) { grid-area: auto; }
+      section.wide { grid-column: 1 / -1; }
+      td:first-child { width: 48%; }
+    }
+
+    @media print {
+      @page { size: landscape; margin: 6mm; }
+      :root { color-scheme: light; }
+      body { width: auto; height: auto; overflow: visible; background: white; color: #1e1e2e; font-size: 8px; }
+      main { width: 100%; height: auto; padding: 0; }
+      header, section { background: white; border-color: #bbb; }
+      header { gap: 10px; padding: 6px 9px; margin-bottom: 5px; }
+      h1 { font-size: 18px; }
+      header p { font-size: 8px; }
+      .grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-areas:
+          "lsp oil notebook notebook essentials essentials"
+          "telescope autocomplete latex git marks folds";
+        grid-template-rows: auto auto;
+        gap: 5px;
+      }
+      section:nth-child(1) { grid-area: telescope; }
+      section:nth-child(2) { grid-area: oil; }
+      section:nth-child(3) { grid-area: notebook; }
+      section:nth-child(4) { grid-area: lsp; }
+      section:nth-child(5) { grid-area: autocomplete; }
+      section:nth-child(6) { grid-area: git; }
+      section:nth-child(7) { grid-area: marks; }
+      section:nth-child(8) { grid-area: folds; }
+      section:nth-child(9) { grid-area: essentials; }
+      section:nth-child(10) { grid-area: latex; }
+      h2 { padding: 5px 6px; background: #eee; border-color: #bbb; color: #1e66f5; font-size: 9px; }
+      tr:not(:last-child), .note { border-color: #ccc; }
+      td { padding: 3px 4px; }
+      kbd { min-width: 1.5em; padding: 0 3px; border-bottom-width: 2px; border-radius: 4px; background: #eee; border-color: #aaa; color: #111; font-size: 7px; }
+      .note { padding: 4px 5px; font-size: 7px; }
+      code { color: #287c3b; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Neovim Cheat Sheet</h1>
+      <p><span class="leader">Leader = Space</span> · Press <kbd>Space</kbd> and pause to open WhichKey.</p>
+    </header>
+
+    <div class="grid">
+      <section>
+        <h2>Telescope</h2>
+        <table>
+          <tr><td><kbd>Space</kbd><kbd>f</kbd><kbd>f</kbd></td><td>Find files from the working directory</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>f</kbd><kbd>g</kbd></td><td>Search text across files</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>f</kbd><kbd>b</kbd></td><td>Search open buffers</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>f</kbd><kbd>s</kbd></td><td>Search symbols in the current document</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Oil file manager</h2>
+        <table>
+          <tr><td><kbd>-</kbd></td><td>Open the current file's parent directory</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Open selected file or directory</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>p</kbd></td><td>Preview selected file</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>s</kbd></td><td>Open in a vertical split</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>h</kbd></td><td>Open in a horizontal split</td></tr>
+          <tr><td><kbd>g</kbd><kbd>?</kbd></td><td>Show all Oil shortcuts</td></tr>
+        </table>
+        <p class="note">Oil is editable: rename or delete lines, then use <code>:w</code> to apply file operations.</p>
+      </section>
+
+      <section class="wide">
+        <h2>Jupyter notebooks</h2>
+        <table>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>r</kbd></td><td>Run current cell</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>n</kbd></td><td>Run current cell and advance</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>a</kbd></td><td>Run all cells</td></tr>
+          <tr><td><kbd>]</kbd><kbd>j</kbd> / <kbd>[</kbd><kbd>j</kbd></td><td>Next / previous cell</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>l</kbd></td><td>Run current line</td></tr>
+          <tr><td>Visual + <kbd>Space</kbd><kbd>j</kbd><kbd>v</kbd></td><td>Run selected code</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>o</kbd></td><td>Open or enter the current cell's output</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>h</kbd></td><td>Hide cell output</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>x</kbd></td><td>Interrupt execution</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>R</kbd></td><td>Restart kernel</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>i</kbd></td><td>Manually initialize the Neovim kernel</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>j</kbd><kbd>e</kbd></td><td>Save notebook, embed outputs, and export rendered HTML</td></tr>
+        </table>
+        <p class="note"><code>.ipynb</code> files auto-start the kernel. Cells are separated with <code># %%</code>.</p>
+      </section>
+
+      <section>
+        <h2>Code navigation &amp; LSP</h2>
+        <table>
+          <tr><td><kbd>g</kbd><kbd>d</kbd></td><td>Go to definition</td></tr>
+          <tr><td><kbd>g</kbd><kbd>r</kbd></td><td>Find references</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>r</kbd><kbd>n</kbd></td><td>Rename symbol</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>c</kbd><kbd>a</kbd></td><td>Show code actions</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>w</kbd>, then <kbd>d</kbd></td><td>Show the diagnostic under the cursor</td></tr>
+          <tr><td><kbd>]</kbd><kbd>d</kbd> / <kbd>[</kbd><kbd>d</kbd></td><td>Next / previous diagnostic</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>x</kbd><kbd>x</kbd></td><td>Open all diagnostics in Trouble</td></tr>
+          <tr><td><code>:LspInfo</code></td><td>Inspect attached language servers</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Autocomplete</h2>
+        <table>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Space</kbd></td><td>Open completion menu</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Next / previous suggestion or snippet stop</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Accept selected completion</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Git hunks</h2>
+        <table>
+          <tr><td><kbd>]</kbd><kbd>h</kbd> / <kbd>[</kbd><kbd>h</kbd></td><td>Next / previous changed hunk</td></tr>
+          <tr><td><span class="symbol">│</span></td><td>Added or modified line</td></tr>
+          <tr><td><span class="symbol">_</span></td><td>Deleted line</td></tr>
+          <tr><td><span class="symbol">‾</span></td><td>Deletion above the current line</td></tr>
+          <tr><td><span class="symbol">~</span></td><td>Changed line with deletions</td></tr>
+          <tr><td><span class="symbol">┆</span></td><td>Untracked line</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Marks</h2>
+        <table>
+          <tr><td><kbd>m</kbd><kbd>x</kbd></td><td>Set mark <code>x</code></td></tr>
+          <tr><td><kbd>`</kbd><kbd>x</kbd></td><td>Jump to the exact position of mark <code>x</code></td></tr>
+          <tr><td><kbd>'</kbd><kbd>x</kbd></td><td>Jump to the line containing mark <code>x</code></td></tr>
+          <tr><td><kbd>m</kbd><kbd>]</kbd> / <kbd>m</kbd><kbd>[</kbd></td><td>Next / previous mark</td></tr>
+          <tr><td><kbd>m</kbd><kbd>:</kbd></td><td>Preview a mark</td></tr>
+          <tr><td><kbd>d</kbd><kbd>m</kbd><kbd>x</kbd></td><td>Delete mark <code>x</code></td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Folds</h2>
+        <table>
+          <tr><td><kbd>z</kbd><kbd>a</kbd></td><td>Toggle fold</td></tr>
+          <tr><td><kbd>z</kbd><kbd>o</kbd></td><td>Open fold</td></tr>
+          <tr><td><kbd>z</kbd><kbd>c</kbd></td><td>Close fold</td></tr>
+          <tr><td><kbd>z</kbd><kbd>R</kbd></td><td>Open every fold</td></tr>
+          <tr><td><kbd>z</kbd><kbd>M</kbd></td><td>Close every fold</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Neovim essentials &amp; splits</h2>
+        <table>
+          <tr><td><code>:w</code></td><td>Save</td></tr>
+          <tr><td><code>:q</code> / <code>:wq</code></td><td>Quit / save and quit</td></tr>
+          <tr><td><code>:e path</code></td><td>Open a file</td></tr>
+          <tr><td><code>:bd</code></td><td>Close current buffer</td></tr>
+          <tr><td><code>:vsplit path</code></td><td>Open a vertical split</td></tr>
+          <tr><td><code>:split path</code></td><td>Open a horizontal split</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>w</kbd>, then <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd></td><td>Move between splits</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>w</kbd><kbd>c</kbd></td><td>Close current split</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>w</kbd><kbd>=</kbd></td><td>Equalize split sizes</td></tr>
+          <tr><td><code>:tabe path</code></td><td>Open file in a new tab</td></tr>
+          <tr><td><kbd>g</kbd><kbd>t</kbd> / <kbd>g</kbd><kbd>T</kbd></td><td>Next / previous tab</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>LaTeX · VimTeX</h2>
+        <table>
+          <tr><td><kbd>Space</kbd><kbd>l</kbd><kbd>l</kbd></td><td>Start or stop continuous compilation</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>l</kbd><kbd>v</kbd></td><td>Open the current PDF in Skim</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>l</kbd><kbd>V</kbd></td><td>Preview the first PDF page inside Neovim</td></tr>
+          <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Next / previous page in the terminal PDF preview</td></tr>
+          <tr><td><kbd>Space</kbd><kbd>l</kbd><kbd>p</kbd></td><td>Preview the equation under the cursor with Nabla</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Move through LaTeX snippet fields</td></tr>
+          <tr><td><kbd>Shift</kbd>+<kbd>Cmd</kbd>+click</td><td>Jump from a location in Skim back to its source</td></tr>
+        </table>
+        <p class="note">Press <kbd>q</kbd> to close the terminal preview. Tectonic builds PDFs; TexLab supplies completion and diagnostics.</p>
+      </section>
+    </div>
+
+    <footer>Generated for Callum's Neovim configuration.</footer>
+  </main>
+</body>
+</html>
