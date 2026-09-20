@@ -1,0 +1,18 @@
+{
+	"name": "Vimium C",
+	"@time": "9/20/2026, 3:17:28 PM",
+	"time": 1789942648090,
+	"environment": {
+		"extension": "2.12.2",
+		"platform": "mac",
+		"chromium": 153
+	},
+	"allBrowserUrls": true,
+	"keyLayout": 2,
+	"keyMappings": [
+		"#!no-check",
+		"map :q removeTab",
+		""
+	],
+	"vimSync": true
+}

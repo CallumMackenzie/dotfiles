@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal configuration for Neovim, tmux, Hammerspoon, Ghostty, and Git.
+Personal configuration for Neovim, tmux, Hammerspoon, Ghostty, Git, and Vimium C.
 
 ## Install
 
@@ -18,3 +18,5 @@ ln -s ~/Downloads/dotfiles/git/.gitconfig ~/.gitconfig
 
 Neovim plugins are restored automatically from `nvim/lazy-lock.json` by lazy.nvim.
 Downloaded plugins and tmux plugin files are intentionally not stored in this repository.
+
+Import `vimium-c/settings.json` from Vimium C's **Backup and Restore** options.
