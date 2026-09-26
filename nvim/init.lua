@@ -314,7 +314,18 @@ require("lazy").setup({
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { options = { theme = "catppuccin-mocha" } },
+    opts = {
+      options = { theme = "catppuccin-mocha" },
+      sections = {
+        lualine_c = {
+          {
+            "filename",
+            path = 1,
+            shorting_target = 40,
+          },
+        },
+      },
+    },
   },
   {
     "echasnovski/mini.surround",
