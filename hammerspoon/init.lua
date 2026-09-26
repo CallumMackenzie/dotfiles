@@ -1,5 +1,5 @@
 hs.hotkey.bind({ "cmd", "alt" }, "0", function()
-  hs.application.launchOrFocus("Ghostty")
+  hs.application.launchOrFocus("WezTerm")
 end)
 
 hs.hotkey.bind({ "cmd", "alt" }, "9", function()

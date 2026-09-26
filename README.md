@@ -1,18 +1,17 @@
 # dotfiles
 
-Personal configuration for Neovim, tmux, Hammerspoon, Ghostty, Git, and Vimium C.
+Personal configuration for Neovim, tmux, Hammerspoon, WezTerm, Git, and Vimium C.
 
 ## Install
 
 Clone the repository into `~/Downloads/dotfiles`, then create the symlinks:
 
 ```sh
-mkdir -p ~/.config "$HOME/Library/Application Support/com.mitchellh.ghostty"
+mkdir -p ~/.config/wezterm
 ln -s ~/Downloads/dotfiles/nvim ~/.config/nvim
 ln -s ~/Downloads/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 ln -s ~/Downloads/dotfiles/hammerspoon ~/.hammerspoon
-ln -s ~/Downloads/dotfiles/ghostty/config.ghostty \
-  "$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
+ln -s ~/Downloads/dotfiles/wezterm/wezterm.lua ~/.config/wezterm/wezterm.lua
 ln -s ~/Downloads/dotfiles/git/.gitconfig ~/.gitconfig
 ```
 
