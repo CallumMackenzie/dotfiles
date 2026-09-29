@@ -190,30 +190,43 @@ require("lazy").setup({
           end
 
           vim.cmd.write()
-          local exported = pcall(vim.cmd, "MoltenExportOutput!")
-          if not exported then
-            vim.notify(
-              "No compatible Molten outputs were embedded; rendering the saved notebook instead",
-              vim.log.levels.WARN
-            )
-          end
-
           local html = vim.fn.fnamemodify(notebook, ":r") .. ".html"
-          vim.notify("Rendering " .. vim.fn.fnamemodify(html, ":t") .. "...")
+          vim.notify("Executing notebook before HTML export...")
           vim.system({
             neovim_python_dir .. "/jupyter",
             "nbconvert",
             "--to",
-            "html",
+            "notebook",
+            "--execute",
+            "--inplace",
+            "--ExecutePreprocessor.kernel_name=neovim",
+            "--ExecutePreprocessor.timeout=600",
             notebook,
-          }, { text = true }, function(result)
+          }, { text = true }, function(execute_result)
             vim.schedule(function()
-              if result.code == 0 then
-                vim.notify("Exported notebook to " .. html)
-              else
-                local message = vim.trim(result.stderr or result.stdout or "Unknown nbconvert error")
-                vim.notify("Notebook export failed: " .. message, vim.log.levels.ERROR)
+              if execute_result.code ~= 0 then
+                local message = vim.trim(execute_result.stderr or execute_result.stdout or "Unknown execution error")
+                vim.notify("Notebook execution failed: " .. message, vim.log.levels.ERROR)
+                return
               end
+
+              vim.notify("Rendering " .. vim.fn.fnamemodify(html, ":t") .. "...")
+              vim.system({
+                neovim_python_dir .. "/jupyter",
+                "nbconvert",
+                "--to",
+                "html",
+                notebook,
+              }, { text = true }, function(render_result)
+                vim.schedule(function()
+                  if render_result.code == 0 then
+                    vim.notify("Stored outputs and exported notebook to " .. html)
+                  else
+                    local message = vim.trim(render_result.stderr or render_result.stdout or "Unknown render error")
+                    vim.notify("Notebook export failed: " .. message, vim.log.levels.ERROR)
+                  end
+                end)
+              end)
             end)
           end)
         end,
@@ -261,7 +274,58 @@ require("lazy").setup({
       },
       {
         "<leader>ja",
-        function() require("notebook-navigator").run_all_cells() end,
+        function()
+          local navigator = require("notebook-navigator")
+          local window = vim.api.nvim_get_current_win()
+          local original_cursor = vim.api.nvim_win_get_cursor(window)
+          local executed = 0
+
+          local ok, err = pcall(function()
+            vim.api.nvim_win_set_cursor(window, { 1, 0 })
+            local marker = require("notebook-navigator.utils").get_cell_marker(
+              0,
+              navigator.config.cell_markers
+            )
+            local first_cell = vim.fn.search("^" .. marker, "W")
+            if first_cell == 0 then
+              error("No notebook cell markers found")
+            end
+
+            while true do
+              local marker_line = vim.api.nvim_get_current_line()
+              local is_markdown = marker_line:match("^%s*# %%%% %[%s*markdown%s*%]") ~= nil
+              local cell = navigator.miniai_spec("i")
+              local lines = vim.api.nvim_buf_get_lines(0, cell.from.line - 1, cell.to.line, false)
+              local has_content = false
+
+              for _, line in ipairs(lines) do
+                if vim.trim(line) ~= "" then
+                  has_content = true
+                  break
+                end
+              end
+
+              if has_content and not is_markdown then
+                navigator.run_cell()
+                executed = executed + 1
+              end
+
+              if navigator.move_cell("d") == "last" then
+                break
+              end
+            end
+          end)
+
+          if vim.api.nvim_win_is_valid(window) then
+            vim.api.nvim_win_set_cursor(window, original_cursor)
+          end
+
+          if not ok then
+            error(err)
+          end
+
+          vim.notify(("Queued %d notebook cell(s)"):format(executed))
+        end,
         desc = "Run all notebook cells",
       },
     },
