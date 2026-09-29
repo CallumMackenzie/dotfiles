@@ -11,11 +11,11 @@ hs.hotkey.bind({ "cmd", "alt" }, "8", function()
 end)
 
 hs.hotkey.bind({ "cmd", "alt" }, "7", function()
-  hs.application.launchOrFocus("Messages")
+  hs.application.launchOrFocus("Preview")
 end)
 
 hs.hotkey.bind({ "cmd", "alt" }, "6", function()
-  hs.application.launchOrFocus("Preview")
+  hs.application.launchOrFocus("Messages")
 end)
 
 hs.alert.show("Hammerspoon config loaded")
