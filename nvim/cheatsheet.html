@@ -77,12 +77,11 @@
       display: grid;
       flex: 1 1 auto;
       min-height: 0;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       grid-template-areas:
-        "lsp oil notebook notebook essentials essentials"
-        "telescope autocomplete latex git marks folds"
-        "vimium vimium vimium vimium vimium vimium";
-      grid-template-rows: auto 1fr auto;
+        "lsp lsp oil oil notebook notebook notebook notebook essentials essentials essentials essentials"
+        "telescope telescope autocomplete autocomplete latex latex latex git git marks marks folds";
+      grid-template-rows: auto 1fr;
       gap: 8px;
     }
 
@@ -104,7 +103,6 @@
     section:nth-child(8) { grid-area: folds; }
     section:nth-child(9) { grid-area: essentials; }
     section:nth-child(10) { grid-area: latex; }
-    section:nth-child(11) { grid-area: vimium; }
 
     h2 {
       margin: 0;
@@ -201,12 +199,11 @@
       h1 { font-size: 18px; }
       header p { font-size: 8px; }
       .grid {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(12, minmax(0, 1fr));
         grid-template-areas:
-          "lsp oil notebook notebook essentials essentials"
-          "telescope autocomplete latex git marks folds"
-          "vimium vimium vimium vimium vimium vimium";
-        grid-template-rows: auto auto auto;
+          "lsp lsp oil oil notebook notebook notebook notebook essentials essentials essentials essentials"
+          "telescope telescope autocomplete autocomplete latex latex latex git git marks marks folds";
+        grid-template-rows: auto auto;
         gap: 5px;
       }
       section:nth-child(1) { grid-area: telescope; }
@@ -219,7 +216,6 @@
       section:nth-child(8) { grid-area: folds; }
       section:nth-child(9) { grid-area: essentials; }
       section:nth-child(10) { grid-area: latex; }
-      section:nth-child(11) { grid-area: vimium; }
       h2 { padding: 5px 6px; background: #eee; border-color: #bbb; color: #1e66f5; font-size: 9px; }
       tr:not(:last-child), .note { border-color: #ccc; }
       td { padding: 3px 4px; }
@@ -301,6 +297,12 @@
           <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Next / previous suggestion or snippet stop</td></tr>
           <tr><td><kbd>Enter</kbd></td><td>Accept selected completion</td></tr>
         </table>
+        <h2>Vimium C</h2>
+        <table>
+          <tr><td><kbd>b</kbd></td><td>Search and open a bookmark</td></tr>
+          <tr><td><kbd>o</kbd></td><td>Search history, bookmarks, and URLs</td></tr>
+          <tr><td><kbd>T</kbd></td><td>Search open browser tabs</td></tr>
+        </table>
       </section>
 
       <section>
@@ -369,14 +371,6 @@
         <p class="note">Press <kbd>q</kbd> to close the terminal preview. Tectonic builds PDFs; TexLab supplies completion and diagnostics.</p>
       </section>
 
-      <section class="wide">
-        <h2>Vimium C</h2>
-        <table>
-          <tr><td><kbd>b</kbd></td><td>Search and open a bookmark</td></tr>
-          <tr><td><kbd>o</kbd></td><td>Search history, bookmarks, and URLs</td></tr>
-          <tr><td><kbd>T</kbd></td><td>Search open browser tabs</td></tr>
-        </table>
-      </section>
     </div>
 
     <footer>Generated for Callum's Neovim, Vimium C, and Hammerspoon configurations.</footer>
