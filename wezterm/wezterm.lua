@@ -6,6 +6,7 @@ local config = wezterm.config_builder()
 
 -- Let tmux exclusively manage sessions, windows, and panes.
 config.enable_tab_bar = false
+config.window_decorations = "RESIZE"
 config.keys = {
   {
     key = "t",
