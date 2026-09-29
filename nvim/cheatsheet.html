@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Neovim &amp; App Shortcut Cheat Sheet</title>
+  <title>Neovim, Vimium C &amp; App Shortcut Cheat Sheet</title>
   <style>
     :root {
       color-scheme: dark;
@@ -80,8 +80,9 @@
       grid-template-columns: repeat(6, minmax(0, 1fr));
       grid-template-areas:
         "lsp oil notebook notebook essentials essentials"
-        "telescope autocomplete latex git marks folds";
-      grid-template-rows: auto 1fr;
+        "telescope autocomplete latex git marks folds"
+        "vimium vimium vimium vimium vimium vimium";
+      grid-template-rows: auto 1fr auto;
       gap: 8px;
     }
 
@@ -103,6 +104,7 @@
     section:nth-child(8) { grid-area: folds; }
     section:nth-child(9) { grid-area: essentials; }
     section:nth-child(10) { grid-area: latex; }
+    section:nth-child(11) { grid-area: vimium; }
 
     h2 {
       margin: 0;
@@ -202,8 +204,9 @@
         grid-template-columns: repeat(6, minmax(0, 1fr));
         grid-template-areas:
           "lsp oil notebook notebook essentials essentials"
-          "telescope autocomplete latex git marks folds";
-        grid-template-rows: auto auto;
+          "telescope autocomplete latex git marks folds"
+          "vimium vimium vimium vimium vimium vimium";
+        grid-template-rows: auto auto auto;
         gap: 5px;
       }
       section:nth-child(1) { grid-area: telescope; }
@@ -216,6 +219,7 @@
       section:nth-child(8) { grid-area: folds; }
       section:nth-child(9) { grid-area: essentials; }
       section:nth-child(10) { grid-area: latex; }
+      section:nth-child(11) { grid-area: vimium; }
       h2 { padding: 5px 6px; background: #eee; border-color: #bbb; color: #1e66f5; font-size: 9px; }
       tr:not(:last-child), .note { border-color: #ccc; }
       td { padding: 3px 4px; }
@@ -229,7 +233,7 @@
 <body>
   <main>
     <header>
-      <h1>Neovim &amp; App Shortcut Cheat Sheet</h1>
+      <h1>Neovim, Vimium C &amp; App Shortcut Cheat Sheet</h1>
       <p><span class="leader">Leader = Space</span> · Press <kbd>Space</kbd> and pause for WhichKey · App launchers: <kbd>⌘⌥0</kbd> WezTerm · <kbd>⌘⌥9</kbd> Obsidian · <kbd>⌘⌥8</kbd> Brave · <kbd>⌘⌥7</kbd> Preview · <kbd>⌘⌥6</kbd> Messages</p>
     </header>
 
@@ -364,9 +368,18 @@
         </table>
         <p class="note">Press <kbd>q</kbd> to close the terminal preview. Tectonic builds PDFs; TexLab supplies completion and diagnostics.</p>
       </section>
+
+      <section class="wide">
+        <h2>Vimium C</h2>
+        <table>
+          <tr><td><kbd>b</kbd></td><td>Search and open a bookmark</td></tr>
+          <tr><td><kbd>o</kbd></td><td>Search history, bookmarks, and URLs</td></tr>
+          <tr><td><kbd>T</kbd></td><td>Search open browser tabs</td></tr>
+        </table>
+      </section>
     </div>
 
-    <footer>Generated for Callum's Neovim and Hammerspoon configurations.</footer>
+    <footer>Generated for Callum's Neovim, Vimium C, and Hammerspoon configurations.</footer>
   </main>
 </body>
 </html>
