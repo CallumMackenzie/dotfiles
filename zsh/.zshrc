@@ -64,3 +64,9 @@ nbm() {
 }
 
 alias ftl="sed -E 's/^[^Z]*Z[[:space:]]*//'"
+
+# rbenv initializes above and may prepend Homebrew-managed tools. Prefer the
+# declarative profile for global commands while retaining its shims as a
+# fallback for explicitly selected Ruby versions.
+typeset -U path PATH
+path=("$HOME/.local/bin" "/etc/profiles/per-user/$USER/bin" /run/current-system/sw/bin $path)
