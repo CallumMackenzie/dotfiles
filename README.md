@@ -104,7 +104,7 @@ When a turn finishes, the tracked OpenClaw hook calls `tmux-notify-jump`.
 
 Expected behavior:
 
-- macOS shows an `openclaw <tmux-session>` notification whose body previews
+- macOS shows a `<tmux-session>` notification whose body previews
   the first 120 characters of the final assistant response. Responses whose
   normalized body is exactly `NO_REPLY` do not create a notification.
 - Clicking the notification returns to the originating WezTerm/tmux pane.

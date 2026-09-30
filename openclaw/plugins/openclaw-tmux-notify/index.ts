@@ -212,7 +212,7 @@ export default definePluginEntry({
           "--target",
           mapping.pane,
           "--title",
-          `openclaw ${mapping.tmuxSessionName}`,
+          mapping.tmuxSessionName,
           "--body",
           body,
           "--notify-kind",
