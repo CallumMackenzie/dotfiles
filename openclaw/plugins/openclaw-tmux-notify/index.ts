@@ -202,6 +202,8 @@ export default definePluginEntry({
         event.messages,
         event.error ?? (success ? "Turn finished." : "Turn failed."),
       );
+      if (body === "NO_REPLY") return;
+
       const child = spawn(
         notifier,
         [
