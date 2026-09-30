@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Print one tab-separated status/session pair for every local tmux session.
-# Aggregate priority is progressing > finished > stopped.
+# Ignore stale aliases and missing panes, then aggregate live OpenClaw TUIs per
+# tmux session with priority progressing > finished > stopped.
 
 set -eu
 
@@ -23,34 +24,54 @@ if command -v jq >/dev/null 2>&1 && [ -d "$state_dir" ]; then
     if [ -e "$1" ]; then
         registry="$(
             jq -rs '
-                map(select(
+                .[]
+                | select(
                     (.tmuxSessionId | type) == "string" and
+                    (.pane | type) == "string" and
+                    (.updatedAt | type) == "number" and
                     (.status == "progressing" or .status == "finished" or .status == "stopped")
-                ))
-                | group_by(.tmuxSessionId)
-                | .[]
-                | [
-                    .[0].tmuxSessionId,
-                    (if any(.[]; .status == "progressing") then "progressing"
-                     elif any(.[]; .status == "finished") then "finished"
-                     else "stopped"
-                     end)
-                  ]
+                )
+                | [.tmuxSessionId, .pane, .status, .updatedAt]
                 | @tsv
             ' "$@" 2>/dev/null | tr '\n' '|' || true
         )"
     fi
 fi
 
+live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null | tr '\n' '|' || true)"
+
 "$tmux_bin" list-sessions -F '#{session_id}:#{session_name}' 2>/dev/null |
-    awk -F ':' -v registry="$registry" '
+    awk -F ':' -v registry="$registry" -v live_panes="$live_panes" '
         BEGIN {
+            live_count = split(live_panes, live_lines, "|")
+            for (i = 1; i <= live_count; i++) {
+                split(live_lines[i], fields, "\t")
+                if (fields[1] != "" && fields[2] != "") {
+                    live[fields[1] SUBSEP fields[2]] = 1
+                }
+            }
+
             count = split(registry, lines, "|")
             for (i = 1; i <= count; i++) {
                 split(lines[i], fields, "\t")
-                if (fields[1] != "" && fields[2] != "") {
-                    states[fields[1]] = fields[2]
+                session = fields[1]
+                pane = fields[2]
+                state = fields[3]
+                updated = fields[4] + 0
+                key = session SUBSEP pane
+                if (live[key] && (latest[key] == "" || updated >= latest[key])) {
+                    latest[key] = updated
+                    pane_state[key] = state
                 }
+            }
+
+            for (key in pane_state) {
+                split(key, parts, SUBSEP)
+                session = parts[1]
+                state = pane_state[key]
+                if (state == "progressing") states[session] = "progressing"
+                else if (state == "finished" && states[session] != "progressing") states[session] = "finished"
+                else if (states[session] == "") states[session] = "stopped"
             }
         }
         {

@@ -104,12 +104,14 @@ When a turn finishes, the tracked OpenClaw hook calls `tmux-notify-jump`.
 
 Expected behavior:
 
-- macOS shows an `OpenClaw finished` or `OpenClaw failed` notification.
+- macOS shows an `openclaw <tmux-session>` notification whose body previews
+  the first 120 characters of the final assistant response.
 - Clicking the notification returns to the originating WezTerm/tmux pane.
 - Background completions appear in tmux's inbox.
 - `Prefix + N` jumps to the next pane needing attention.
-- Outside tmux, WezTerm shows every local tmux session in its status strip:
-  green means a turn finished, orange means a turn is running, and red means
+- WezTerm shows every local tmux session in its status strip, including while
+  the active terminal is inside tmux:
+  green `✓` means a turn finished, orange `●` means a turn is running, and gray `○` means
   no OpenClaw mapping exists, the TUI stopped, or its last turn failed.
 
 Status is aggregated per tmux session. A progressing OpenClaw pane takes

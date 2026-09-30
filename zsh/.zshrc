@@ -18,7 +18,8 @@ oc() {
     fi
 
     local session_key=""
-    local tmux_target tmux_socket tmux_session_id state_dir mapping_file
+    local tmux_target tmux_socket tmux_session_id tmux_session_name state_dir mapping_file
+    local candidate jq_bin temporary_file updated_at
     local -a tui_args
     local i
 
@@ -47,21 +48,57 @@ oc() {
 
     tmux_socket="${TMUX%%,*}"
     tmux_session_id="$(tmux display-message -p -t "$TMUX_PANE" '#{session_id}')" || return
+    tmux_session_name="$(tmux display-message -p -t "$TMUX_PANE" '#{session_name}')" || return
     state_dir="$HOME/.local/state/openclaw-tmux"
     mapping_file="$state_dir/$session_key.json"
 
     umask 077
     mkdir -p "$state_dir" || return
-    printf '{"pane":"%s","socket":"%s","tmuxSessionId":"%s","status":"stopped","updatedAt":%s}\n' \
-        "$TMUX_PANE" "$tmux_socket" "$tmux_session_id" "$(date +%s)" >| "$mapping_file" || return
+    jq_bin="$(command -v jq 2>/dev/null)"
+    if [[ -z "$jq_bin" ]]; then
+        print -u2 "oc: jq is required to create the tmux notification mapping"
+        return 1
+    fi
+    "$jq_bin" -n \
+        --arg pane "$TMUX_PANE" \
+        --arg socket "$tmux_socket" \
+        --arg tmux_session_id "$tmux_session_id" \
+        --arg tmux_session_name "$tmux_session_name" \
+        --argjson updated_at "$(($(date +%s) * 1000))" \
+        '{pane: $pane, socket: $socket, tmuxSessionId: $tmux_session_id,
+          tmuxSessionName: $tmux_session_name, status: "stopped", updatedAt: $updated_at}' \
+        >| "$mapping_file" || return
 
     command openclaw tui "${tui_args[@]}"
     local openclaw_status=$?
 
-    # Preserve the mapping after the TUI exits so external status displays can
-    # distinguish an idle completed turn from a stopped OpenClaw process.
-    printf '{"pane":"%s","socket":"%s","tmuxSessionId":"%s","status":"stopped","updatedAt":%s}\n' \
-        "$TMUX_PANE" "$tmux_socket" "$tmux_session_id" "$(date +%s)" >| "$mapping_file"
+    # A TUI can create replacement session keys in-place via /new or /reset.
+    # Mark every alias owned by this pane stopped when the process exits.
+    updated_at="$(($(date +%s) * 1000))"
+    if [[ -n "$jq_bin" ]]; then
+        for candidate in "$state_dir"/*.json(N); do
+            if "$jq_bin" -e \
+                --arg pane "$TMUX_PANE" \
+                --arg socket "$tmux_socket" \
+                --arg tmux_session_id "$tmux_session_id" \
+                '.pane == $pane and .socket == $socket and .tmuxSessionId == $tmux_session_id' \
+                "$candidate" >/dev/null 2>&1; then
+                temporary_file="$candidate.$$.$RANDOM.tmp"
+                if "$jq_bin" --argjson updated_at "$updated_at" \
+                    '.status = "stopped" | .updatedAt = $updated_at' \
+                    "$candidate" >| "$temporary_file"; then
+                    chmod 600 "$temporary_file"
+                    mv -f "$temporary_file" "$candidate"
+                else
+                    rm -f "$temporary_file"
+                fi
+            fi
+        done
+    else
+        # Preserve the original mapping even if jq is temporarily unavailable.
+        printf '{"pane":"%s","socket":"%s","tmuxSessionId":"%s","status":"stopped","updatedAt":%s}\n' \
+            "$TMUX_PANE" "$tmux_socket" "$tmux_session_id" "$updated_at" >| "$mapping_file"
+    fi
     return "$openclaw_status"
 }
 

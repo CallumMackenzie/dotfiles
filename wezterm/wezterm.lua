@@ -10,7 +10,7 @@ config.enable_tab_bar = true
 config.show_tabs_in_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 config.use_fancy_tab_bar = false
-config.status_update_interval = 3000
+config.status_update_interval = 500
 config.window_decorations = "RESIZE"
 config.keys = {
   {
@@ -33,18 +33,7 @@ config.window_background_image_hsb = {
   saturation = 0.85,
 }
 
-local function basename(path)
-  return path and path:match("([^/\\]+)$") or ""
-end
-
 wezterm.on("update-status", function(window, pane)
-  -- The foreground process seen by WezTerm is the tmux client for local
-  -- sessions, so suppress the indicator while this pane is inside tmux.
-  if basename(pane:get_foreground_process_name()) == "tmux" then
-    window:set_right_status("")
-    return
-  end
-
   local status_helper = wezterm.home_dir .. "/.local/bin/openclaw-tmux-status"
   local ok, stdout = wezterm.run_child_process({
     status_helper,
@@ -69,7 +58,12 @@ wezterm.on("update-status", function(window, pane)
   local colors = {
     finished = "#9ece6a",
     progressing = "#ff9e64",
-    stopped = "#f7768e",
+    stopped = "#565f89",
+  }
+  local icons = {
+    finished = "✓",
+    progressing = "●",
+    stopped = "○",
   }
   local sessions = {}
   for line in stdout:gmatch("[^\r\n]+") do
@@ -92,7 +86,9 @@ wezterm.on("update-status", function(window, pane)
         Foreground = { Color = colors[session.state] or colors.stopped },
       })
       table.insert(elements, { Attribute = { Intensity = "Bold" } })
-      table.insert(elements, { Text = session.name })
+      table.insert(elements, {
+        Text = string.format("%s %s", icons[session.state] or icons.stopped, session.name),
+      })
       table.insert(elements, { Attribute = { Intensity = "Normal" } })
     end
     table.insert(elements, { Text = " " })
