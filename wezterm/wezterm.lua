@@ -26,7 +26,7 @@ config.macos_window_background_blur = 25
 config.text_background_opacity = 0.92
 
 -- Use the garden photo as a subdued terminal background.
-config.window_background_image = wezterm.home_dir .. "/Downloads/dotfiles/wezterm/backgrounds/garden-koi.jpeg"
+config.window_background_image = wezterm.config_dir .. "/backgrounds/garden-koi.jpeg"
 config.window_background_image_hsb = {
   brightness = 0.06,
   hue = 1.0,
@@ -45,12 +45,23 @@ wezterm.on("update-status", function(window, pane)
     return
   end
 
+  local tmux = wezterm.home_dir .. "/.nix-profile/bin/tmux"
   local ok, stdout = wezterm.run_child_process({
-    "/opt/homebrew/bin/tmux",
+    tmux,
     "list-sessions",
     "-F",
     "#{session_name}",
   })
+
+  -- Keep the pre-Nix bootstrap usable during migration.
+  if not ok then
+    ok, stdout = wezterm.run_child_process({
+      "/opt/homebrew/bin/tmux",
+      "list-sessions",
+      "-F",
+      "#{session_name}",
+    })
+  end
 
   if not ok then
     window:set_right_status("")

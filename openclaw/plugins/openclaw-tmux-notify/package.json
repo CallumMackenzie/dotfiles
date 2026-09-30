@@ -1,0 +1,16 @@
+{
+  "name": "openclaw-tmux-notify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "peerDependencies": {
+    "openclaw": ">=2026.8.2"
+  },
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.8.2",
+      "minGatewayVersion": ">=2026.8.2"
+    }
+  }
+}

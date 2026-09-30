@@ -1,0 +1,2 @@
+# Machine-private shell settings belong in ~/.zshrc.private.
+# Keep that file mode 600 and never commit its contents.

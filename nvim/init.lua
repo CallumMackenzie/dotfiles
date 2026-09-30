@@ -1,9 +1,19 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-local neovim_python_dir = vim.fn.expand("~/.venvs/neovim/bin")
-vim.g.python3_host_prog = neovim_python_dir .. "/python"
-vim.env.PATH = neovim_python_dir .. ":" .. vim.env.PATH
+local neovim_python = vim.env.NVIM_PYTHON
+if not neovim_python or vim.fn.executable(neovim_python) ~= 1 then
+  local legacy_python = vim.fn.expand("~/.venvs/neovim/bin/python")
+  neovim_python = vim.fn.executable(legacy_python) == 1 and legacy_python or vim.fn.exepath("python3")
+end
+
+local neovim_python_dir = vim.fn.fnamemodify(neovim_python, ":h")
+local neovim_jupyter = vim.env.NVIM_JUPYTER
+if not neovim_jupyter or vim.fn.executable(neovim_jupyter) ~= 1 then
+  neovim_jupyter = neovim_python_dir .. "/jupyter"
+end
+
+vim.g.python3_host_prog = neovim_python
 
 local opt = vim.opt
 
@@ -193,7 +203,7 @@ require("lazy").setup({
           local html = vim.fn.fnamemodify(notebook, ":r") .. ".html"
           vim.notify("Executing notebook before HTML export...")
           vim.system({
-            neovim_python_dir .. "/jupyter",
+            neovim_jupyter,
             "nbconvert",
             "--to",
             "notebook",
