@@ -110,11 +110,13 @@ Expected behavior:
 - Background completions appear in tmux's inbox.
 - `Prefix + N` jumps to the next pane needing attention.
 - WezTerm shows every local tmux session in its status strip, including while
-  the active terminal is inside tmux:
-  green `✓` means a turn finished, orange `●` means a turn is running, and gray `○` means
-  no OpenClaw mapping exists, the TUI stopped, or its last turn failed.
+  the active terminal is inside tmux. Each mapped OpenClaw pane gets an icon:
+  green `✓` means a turn finished, orange `●` means a turn is running, and gray
+  `○` means no OpenClaw mapping exists, the TUI stopped, or its last turn
+  failed. For example, `● ✓ env` means one pane is running and another has
+  finished.
 
-Status is aggregated per tmux session. A progressing OpenClaw pane takes
+The session name uses the aggregate color. A progressing OpenClaw pane takes
 priority over a finished pane, which takes priority over stopped panes. Existing
 TUIs must be relaunched with `oc` once after installing this configuration so
 their mappings include the tmux session identifier.

@@ -67,11 +67,22 @@ wezterm.on("update-status", function(window, pane)
   }
   local sessions = {}
   for line in stdout:gmatch("[^\r\n]+") do
-    local state, name = line:match("^(%S+)\t(.+)$")
+    local state, name, pane_states = line:match("^(%S+)\t([^\t]+)\t(.+)$")
     if not name then
-      state, name = "stopped", line
+      state, name, pane_states = "stopped", line, "stopped"
     end
-    table.insert(sessions, { state = state, name = name })
+    local icons_for_session = {}
+    for pane_state in pane_states:gmatch("[^,]+") do
+      table.insert(icons_for_session, pane_state)
+    end
+    if #icons_for_session == 0 then
+      table.insert(icons_for_session, "stopped")
+    end
+    table.insert(sessions, {
+      state = state,
+      name = name,
+      pane_states = icons_for_session,
+    })
   end
 
   local elements = {}
@@ -82,13 +93,20 @@ wezterm.on("update-status", function(window, pane)
         table.insert(elements, { Foreground = { Color = "#7aa2f7" } })
         table.insert(elements, { Text = " • " })
       end
+      table.insert(elements, { Attribute = { Intensity = "Bold" } })
+      for icon_index, pane_state in ipairs(session.pane_states) do
+        if icon_index > 1 then
+          table.insert(elements, { Text = " " })
+        end
+        table.insert(elements, {
+          Foreground = { Color = colors[pane_state] or colors.stopped },
+        })
+        table.insert(elements, { Text = icons[pane_state] or icons.stopped })
+      end
       table.insert(elements, {
         Foreground = { Color = colors[session.state] or colors.stopped },
       })
-      table.insert(elements, { Attribute = { Intensity = "Bold" } })
-      table.insert(elements, {
-        Text = string.format("%s %s", icons[session.state] or icons.stopped, session.name),
-      })
+      table.insert(elements, { Text = " " .. session.name })
       table.insert(elements, { Attribute = { Intensity = "Normal" } })
     end
     table.insert(elements, { Text = " " })

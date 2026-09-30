@@ -1,8 +1,9 @@
 #!/bin/sh
 
-# Print one tab-separated status/session pair for every local tmux session.
-# Ignore stale aliases and missing panes, then aggregate live OpenClaw TUIs per
-# tmux session with priority progressing > finished > stopped.
+# Print one tab-separated aggregate-status/session/pane-statuses row for every
+# local tmux session. Ignore stale aliases and missing panes, reduce aliases to
+# the newest status per pane, then aggregate with priority
+# progressing > finished > stopped.
 
 set -eu
 
@@ -65,10 +66,17 @@ live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null
                 }
             }
 
-            for (key in pane_state) {
-                split(key, parts, SUBSEP)
-                session = parts[1]
+            # Preserve tmux pane order in the icon list. Iterating pane_state
+            # directly would make the display order depend on awk internals.
+            for (i = 1; i <= live_count; i++) {
+                split(live_lines[i], fields, "\t")
+                session = fields[1]
+                pane = fields[2]
+                key = session SUBSEP pane
+                if (!(key in pane_state)) continue
                 state = pane_state[key]
+                if (pane_states[session] != "") pane_states[session] = pane_states[session] ","
+                pane_states[session] = pane_states[session] state
                 if (state == "progressing") states[session] = "progressing"
                 else if (state == "finished" && states[session] != "progressing") states[session] = "finished"
                 else if (states[session] == "") states[session] = "stopped"
@@ -77,6 +85,8 @@ live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null
         {
             state = states[$1]
             if (state == "") state = "stopped"
-            print state "\t" $2
+            icons = pane_states[$1]
+            if (icons == "") icons = "stopped"
+            print state "\t" $2 "\t" icons
         }
     '
