@@ -49,6 +49,12 @@ in
         force = true;
       };
 
+      ".local/bin/openclaw-tmux-status" = {
+        source = ../scripts/openclaw-tmux-status;
+        executable = true;
+        force = true;
+      };
+
       ".openclaw/local-plugins/openclaw-tmux-notify" =
         managedLink openclawPlugin;
     };

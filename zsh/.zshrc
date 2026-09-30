@@ -18,7 +18,7 @@ oc() {
     fi
 
     local session_key=""
-    local tmux_target tmux_socket state_dir mapping_file
+    local tmux_target tmux_socket tmux_session_id state_dir mapping_file
     local -a tui_args
     local i
 
@@ -46,14 +46,23 @@ oc() {
     fi
 
     tmux_socket="${TMUX%%,*}"
+    tmux_session_id="$(tmux display-message -p -t "$TMUX_PANE" '#{session_id}')" || return
     state_dir="$HOME/.local/state/openclaw-tmux"
     mapping_file="$state_dir/$session_key.json"
 
     umask 077
     mkdir -p "$state_dir" || return
-    printf '{"pane":"%s","socket":"%s"}\n' "$TMUX_PANE" "$tmux_socket" >| "$mapping_file" || return
+    printf '{"pane":"%s","socket":"%s","tmuxSessionId":"%s","status":"stopped","updatedAt":%s}\n' \
+        "$TMUX_PANE" "$tmux_socket" "$tmux_session_id" "$(date +%s)" >| "$mapping_file" || return
 
     command openclaw tui "${tui_args[@]}"
+    local openclaw_status=$?
+
+    # Preserve the mapping after the TUI exits so external status displays can
+    # distinguish an idle completed turn from a stopped OpenClaw process.
+    printf '{"pane":"%s","socket":"%s","tmuxSessionId":"%s","status":"stopped","updatedAt":%s}\n' \
+        "$TMUX_PANE" "$tmux_socket" "$tmux_session_id" "$(date +%s)" >| "$mapping_file"
+    return "$openclaw_status"
 }
 
 # Run the repository-root Makefile from anywhere inside a Git repository.

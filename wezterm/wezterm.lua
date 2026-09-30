@@ -45,18 +45,16 @@ wezterm.on("update-status", function(window, pane)
     return
   end
 
-  local tmux = wezterm.home_dir .. "/.nix-profile/bin/tmux"
+  local status_helper = wezterm.home_dir .. "/.local/bin/openclaw-tmux-status"
   local ok, stdout = wezterm.run_child_process({
-    tmux,
-    "list-sessions",
-    "-F",
-    "#{session_name}",
+    status_helper,
   })
 
-  -- Keep the pre-Nix bootstrap usable during migration.
+  -- Keep a red session list available before Home Manager installs the helper.
   if not ok then
+    local tmux = wezterm.home_dir .. "/.nix-profile/bin/tmux"
     ok, stdout = wezterm.run_child_process({
-      "/opt/homebrew/bin/tmux",
+      tmux,
       "list-sessions",
       "-F",
       "#{session_name}",
@@ -68,16 +66,38 @@ wezterm.on("update-status", function(window, pane)
     return
   end
 
+  local colors = {
+    finished = "#9ece6a",
+    progressing = "#ff9e64",
+    stopped = "#f7768e",
+  }
   local sessions = {}
-  for name in stdout:gmatch("[^\r\n]+") do
-    table.insert(sessions, name)
+  for line in stdout:gmatch("[^\r\n]+") do
+    local state, name = line:match("^(%S+)\t(.+)$")
+    if not name then
+      state, name = "stopped", line
+    end
+    table.insert(sessions, { state = state, name = name })
   end
 
-  local status = ""
+  local elements = {}
   if #sessions > 0 then
-    status = " tmux: " .. table.concat(sessions, " • ") .. " "
+    table.insert(elements, { Text = " tmux: " })
+    for index, session in ipairs(sessions) do
+      if index > 1 then
+        table.insert(elements, { Foreground = { Color = "#7aa2f7" } })
+        table.insert(elements, { Text = " • " })
+      end
+      table.insert(elements, {
+        Foreground = { Color = colors[session.state] or colors.stopped },
+      })
+      table.insert(elements, { Attribute = { Intensity = "Bold" } })
+      table.insert(elements, { Text = session.name })
+      table.insert(elements, { Attribute = { Intensity = "Normal" } })
+    end
+    table.insert(elements, { Text = " " })
   end
-  window:set_right_status(status)
+  window:set_right_status(wezterm.format(elements))
 end)
 
 return config

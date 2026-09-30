@@ -108,6 +108,14 @@ Expected behavior:
 - Clicking the notification returns to the originating WezTerm/tmux pane.
 - Background completions appear in tmux's inbox.
 - `Prefix + N` jumps to the next pane needing attention.
+- Outside tmux, WezTerm shows every local tmux session in its status strip:
+  green means a turn finished, orange means a turn is running, and red means
+  no OpenClaw mapping exists, the TUI stopped, or its last turn failed.
+
+Status is aggregated per tmux session. A progressing OpenClaw pane takes
+priority over a finished pane, which takes priority over stopped panes. Existing
+TUIs must be relaunched with `oc` once after installing this configuration so
+their mappings include the tmux session identifier.
 
 Allow `terminal-notifier` under **System Settings → Notifications**. Automatic
 inside-tmux detection and pane routing are local-machine features.
