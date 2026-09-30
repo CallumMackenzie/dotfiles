@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Neovim, Vimium C &amp; App Shortcut Cheat Sheet</title>
+  <title>Setup Command Cheatsheet</title>
   <style>
     :root {
       color-scheme: dark;
@@ -229,7 +229,7 @@
 <body>
   <main>
     <header>
-      <h1>Neovim, Vimium C &amp; App Shortcut Cheat Sheet</h1>
+      <h1>Setup Command Cheatsheet</h1>
       <p><span class="leader">Leader = Space</span> · Press <kbd>Space</kbd> and pause for WhichKey · App launchers: <kbd>⌘⌥0</kbd> WezTerm · <kbd>⌘⌥9</kbd> Obsidian · <kbd>⌘⌥8</kbd> Brave · <kbd>⌘⌥7</kbd> Preview · <kbd>⌘⌥6</kbd> Messages</p>
     </header>
 
@@ -341,8 +341,11 @@
       </section>
 
       <section>
-        <h2>Neovim essentials &amp; splits</h2>
+        <h2>Terminal, tmux &amp; Neovim essentials</h2>
         <table>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>b</kbd>, then <kbd>s</kbd></td><td>Open tmux's session chooser</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>b</kbd>, then <kbd>N</kbd></td><td>Jump to the next pane with an unread OpenClaw notification</td></tr>
+          <tr><td><code>oc</code></td><td>Launch OpenClaw and route completion notifications back to this tmux pane</td></tr>
           <tr><td><code>:w</code></td><td>Save</td></tr>
           <tr><td><code>:q</code> / <code>:wq</code></td><td>Quit / save and quit</td></tr>
           <tr><td><code>:e path</code></td><td>Open a file</td></tr>
@@ -373,7 +376,7 @@
 
     </div>
 
-    <footer>Generated for Callum's Neovim, Vimium C, and Hammerspoon configurations.</footer>
+    <footer>Generated for Callum's terminal, tmux, OpenClaw, Neovim, Vimium C, and Hammerspoon setup.</footer>
   </main>
 </body>
 </html>
