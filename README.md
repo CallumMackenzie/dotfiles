@@ -121,7 +121,8 @@ Expected behavior:
 
 The session name uses the aggregate color. A progressing OpenClaw pane takes
 priority over an unread pane, which takes priority over viewed finished and
-stopped panes. Existing
+stopped panes. The session attached to the current WezTerm pane is underlined;
+windows without an attached tmux client have no underlined session. Existing
 TUIs must be relaunched with `oc` once after installing this configuration so
 their mappings include the tmux session identifier.
 

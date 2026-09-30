@@ -1,14 +1,16 @@
 #!/bin/sh
 
-# Print one tab-separated aggregate-status/session/pane-statuses row for every
-# local tmux session. Ignore stale aliases and missing panes, reduce aliases to
-# the newest status per pane, overlay unread completions from tmux-notify-jump,
-# then aggregate with priority
+# Print one tab-separated aggregate-status/session/pane-statuses/active row for
+# every local tmux session. When given a terminal TTY, mark the session attached
+# to that tmux client active. Ignore stale aliases and missing panes, reduce
+# aliases to the newest status per pane, overlay unread completions from
+# tmux-notify-jump, then aggregate with priority
 # progressing > unread > finished > stopped.
 
 set -eu
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/openclaw-tmux"
+client_tty="${1:-}"
 
 if command -v tmux >/dev/null 2>&1; then
     tmux_bin="$(command -v tmux)"
@@ -42,6 +44,16 @@ fi
 
 live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null | tr '\n' '|' || true)"
 
+active_session_id=""
+case "$client_tty" in
+    /dev/*)
+        active_session_id="$(
+            $tmux_bin list-clients -F '#{client_tty}:#{session_id}' 2>/dev/null |
+                awk -F ':' -v tty="$client_tty" '$1 == tty { print $2; exit }'
+        )"
+        ;;
+esac
+
 unread_panes=""
 inbox_root="$($tmux_bin show-option -gqv @tmux-notify-jump-inbox-root 2>/dev/null || true)"
 case "$inbox_root" in
@@ -60,7 +72,7 @@ case "$inbox_root" in
 esac
 
 "$tmux_bin" list-sessions -F '#{session_id}:#{session_name}' 2>/dev/null |
-    awk -F ':' -v registry="$registry" -v live_panes="$live_panes" -v unread_panes="$unread_panes" '
+    awk -F ':' -v registry="$registry" -v live_panes="$live_panes" -v unread_panes="$unread_panes" -v active_session_id="$active_session_id" '
         BEGIN {
             live_count = split(live_panes, live_lines, "|")
             for (i = 1; i <= live_count; i++) {
@@ -113,6 +125,7 @@ esac
             if (state == "") state = "stopped"
             icons = pane_states[$1]
             if (icons == "") icons = "stopped"
-            print state "\t" $2 "\t" icons
+            active = ($1 == active_session_id ? "active" : "inactive")
+            print state "\t" $2 "\t" icons "\t" active
         }
     '

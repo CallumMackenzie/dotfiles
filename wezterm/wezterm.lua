@@ -35,8 +35,10 @@ config.window_background_image_hsb = {
 
 wezterm.on("update-status", function(window, pane)
   local status_helper = wezterm.home_dir .. "/.local/bin/openclaw-tmux-status"
+  local pane_tty = pane:get_tty_name() or ""
   local ok, stdout = wezterm.run_child_process({
     status_helper,
+    pane_tty,
   })
 
   -- Keep a red session list available before Home Manager installs the helper.
@@ -69,9 +71,14 @@ wezterm.on("update-status", function(window, pane)
   }
   local sessions = {}
   for line in stdout:gmatch("[^\r\n]+") do
-    local state, name, pane_states = line:match("^(%S+)\t([^\t]+)\t(.+)$")
+    local state, name, pane_states, active = line:match("^(%S+)\t([^\t]+)\t([^\t]+)\t(%S+)$")
+    if not name then
+      state, name, pane_states = line:match("^(%S+)\t([^\t]+)\t(.+)$")
+      active = "inactive"
+    end
     if not name then
       state, name, pane_states = "stopped", line, "stopped"
+      active = "inactive"
     end
     local icons_for_session = {}
     for pane_state in pane_states:gmatch("[^,]+") do
@@ -84,6 +91,7 @@ wezterm.on("update-status", function(window, pane)
       state = state,
       name = name,
       pane_states = icons_for_session,
+      active = active == "active",
     })
   end
 
@@ -95,6 +103,9 @@ wezterm.on("update-status", function(window, pane)
         table.insert(elements, { Foreground = { Color = "#7aa2f7" } })
         table.insert(elements, { Text = " • " })
       end
+      table.insert(elements, {
+        Attribute = { Underline = session.active and "Single" or "None" },
+      })
       table.insert(elements, { Attribute = { Intensity = "Bold" } })
       for icon_index, pane_state in ipairs(session.pane_states) do
         if icon_index > 1 then
@@ -110,6 +121,7 @@ wezterm.on("update-status", function(window, pane)
       })
       table.insert(elements, { Text = " " .. session.name })
       table.insert(elements, { Attribute = { Intensity = "Normal" } })
+      table.insert(elements, { Attribute = { Underline = "None" } })
     end
     table.insert(elements, { Text = " " })
   end
