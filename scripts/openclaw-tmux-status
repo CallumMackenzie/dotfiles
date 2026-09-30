@@ -4,7 +4,7 @@
 # local tmux session. Ignore stale aliases and missing panes, reduce aliases to
 # the newest status per pane, overlay unread completions from tmux-notify-jump,
 # then aggregate with priority
-# progressing > finished > stopped.
+# progressing > unread > finished > stopped.
 
 set -eu
 
@@ -103,7 +103,8 @@ esac
                 if (pane_states[session] != "") pane_states[session] = pane_states[session] ","
                 pane_states[session] = pane_states[session] icon_state
                 if (state == "progressing") states[session] = "progressing"
-                else if (state == "finished" && states[session] != "progressing") states[session] = "finished"
+                else if (icon_state == "unread" && states[session] != "progressing") states[session] = "unread"
+                else if (state == "finished" && states[session] != "progressing" && states[session] != "unread") states[session] = "finished"
                 else if (states[session] == "") states[session] = "stopped"
             }
         }

@@ -115,11 +115,13 @@ Expected behavior:
   the finished pane has been viewed, orange `●` means a turn is running, and
   gray `○` means no OpenClaw mapping exists, the TUI stopped, or its last turn
   failed. For example, `● ✓ env` means one pane is running and another has
-  finished. `Prefix + N` jumps to the next unread notification, changing its
-  pink check to green when the destination pane is selected.
+  finished. A session name is pink while any finished pane has an unread
+  notification. `Prefix + N` jumps to the next unread notification, changing
+  its pink check and session name to green when the destination pane is selected.
 
 The session name uses the aggregate color. A progressing OpenClaw pane takes
-priority over a finished pane, which takes priority over stopped panes. Existing
+priority over an unread pane, which takes priority over viewed finished and
+stopped panes. Existing
 TUIs must be relaunched with `oc` once after installing this configuration so
 their mappings include the tmux session identifier.
 
