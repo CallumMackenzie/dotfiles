@@ -57,11 +57,13 @@ wezterm.on("update-status", function(window, pane)
 
   local colors = {
     finished = "#9ece6a",
+    unread = "#ff79c6",
     progressing = "#ff9e64",
     stopped = "#565f89",
   }
   local icons = {
     finished = "✓",
+    unread = "✓",
     progressing = "●",
     stopped = "○",
   }

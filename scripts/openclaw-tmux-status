@@ -2,7 +2,8 @@
 
 # Print one tab-separated aggregate-status/session/pane-statuses row for every
 # local tmux session. Ignore stale aliases and missing panes, reduce aliases to
-# the newest status per pane, then aggregate with priority
+# the newest status per pane, overlay unread completions from tmux-notify-jump,
+# then aggregate with priority
 # progressing > finished > stopped.
 
 set -eu
@@ -41,8 +42,25 @@ fi
 
 live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null | tr '\n' '|' || true)"
 
+unread_panes=""
+inbox_root="$($tmux_bin show-option -gqv @tmux-notify-jump-inbox-root 2>/dev/null || true)"
+case "$inbox_root" in
+    /*/tmux-notify-jump/inbox/*)
+        if [ -d "$inbox_root" ] && [ ! -L "$inbox_root" ]; then
+            for entry in "$inbox_root"/*; do
+                [ -d "$entry" ] && [ ! -L "$entry" ] && [ -f "$entry/kind" ] || continue
+                pane=""
+                IFS= read -r pane <"$entry/pane_id" 2>/dev/null || true
+                case "$pane" in
+                    %*) unread_panes="${unread_panes}${pane}|" ;;
+                esac
+            done
+        fi
+        ;;
+esac
+
 "$tmux_bin" list-sessions -F '#{session_id}:#{session_name}' 2>/dev/null |
-    awk -F ':' -v registry="$registry" -v live_panes="$live_panes" '
+    awk -F ':' -v registry="$registry" -v live_panes="$live_panes" -v unread_panes="$unread_panes" '
         BEGIN {
             live_count = split(live_panes, live_lines, "|")
             for (i = 1; i <= live_count; i++) {
@@ -50,6 +68,11 @@ live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null
                 if (fields[1] != "" && fields[2] != "") {
                     live[fields[1] SUBSEP fields[2]] = 1
                 }
+            }
+
+            unread_count = split(unread_panes, unread_lines, "|")
+            for (i = 1; i <= unread_count; i++) {
+                if (unread_lines[i] != "") unread[unread_lines[i]] = 1
             }
 
             count = split(registry, lines, "|")
@@ -75,8 +98,10 @@ live_panes="$($tmux_bin list-panes -a -F '#{session_id}\t#{pane_id}' 2>/dev/null
                 key = session SUBSEP pane
                 if (!(key in pane_state)) continue
                 state = pane_state[key]
+                icon_state = state
+                if (state == "finished" && unread[pane]) icon_state = "unread"
                 if (pane_states[session] != "") pane_states[session] = pane_states[session] ","
-                pane_states[session] = pane_states[session] state
+                pane_states[session] = pane_states[session] icon_state
                 if (state == "progressing") states[session] = "progressing"
                 else if (state == "finished" && states[session] != "progressing") states[session] = "finished"
                 else if (states[session] == "") states[session] = "stopped"
