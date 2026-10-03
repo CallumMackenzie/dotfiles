@@ -102,7 +102,7 @@ local function current_directory(pane, pane_tty)
 end
 
 wezterm.on("update-status", function(window, pane)
-  local status_helper = wezterm.home_dir .. "/.local/bin/openclaw-tmux-status"
+  local status_helper = wezterm.home_dir .. "/.local/bin/pi-tmux-status"
   local pane_tty = pane:get_tty_name() or ""
   local ok, stdout = wezterm.run_child_process({
     status_helper,

@@ -47,22 +47,19 @@ else
 fi
 git -C "$notifier_dir" checkout --detach "$notifier_ref"
 link_path "$notifier_dir/tmux-notify-jump" "$HOME/.local/bin/tmux-notify-jump"
+link_path "$repo_root/scripts/pi-tmux-status" "$HOME/.local/bin/pi-tmux-status"
+link_path "$repo_root/pi/AGENTS.md" "$HOME/.pi/agent/AGENTS.md"
+link_path "$repo_root/pi/extensions/tmux-notify.ts" "$HOME/.pi/agent/extensions/tmux-notify.ts"
+link_path "$repo_root/pi/mcp/mcp-google-drive-compat.mjs" "$HOME/.local/bin/pi-mcp-google-drive-compat.mjs"
+link_path "$repo_root/pi/mcp/leetcode-mcp-keychain" "$HOME/.local/bin/pi-leetcode-mcp-keychain"
+link_path "$repo_root/pi/mcp/course-tracker-mcp" "$HOME/.local/bin/pi-course-tracker-mcp"
+bash "$repo_root/scripts/setup-pi-mcp.sh" "$repo_root/pi"
+bash "$repo_root/scripts/configure-pi-models.sh" \
+  "$HOME/.pi/agent/settings.json" "$repo_root/pi/model-defaults.json"
 
 python_bin="$(brew --prefix python@3.14)/bin/python3.14"
 "$python_bin" -m venv "$HOME/.venvs/neovim"
 "$HOME/.venvs/neovim/bin/python" -m pip install --upgrade pip
 "$HOME/.venvs/neovim/bin/python" -m pip install -r "$repo_root/python/neovim-requirements.txt"
-
-if command -v openclaw >/dev/null 2>&1; then
-  openclaw plugins install --link --force --accept-capabilities \
-    --acknowledge-install-policy-warning \
-    "$repo_root/openclaw/plugins/openclaw-tmux-notify"
-  openclaw plugins enable openclaw-tmux-notify --accept-capabilities
-  openclaw config set \
-    'plugins.entries.openclaw-tmux-notify.hooks.allowConversationAccess' \
-    true --strict-json
-  openclaw config validate
-  printf 'Restart the OpenClaw Gateway to load any plugin changes.\n'
-fi
 
 printf 'Bootstrap complete. Reload zsh and tmux, then allow terminal-notifier in macOS Notifications.\n'

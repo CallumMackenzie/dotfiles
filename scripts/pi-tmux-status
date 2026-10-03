@@ -9,7 +9,7 @@
 
 set -eu
 
-state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/openclaw-tmux"
+state_dir="$HOME/.local/state/pi-tmux"
 client_tty="${1:-}"
 
 if command -v tmux >/dev/null 2>&1; then
@@ -33,11 +33,17 @@ if command -v jq >/dev/null 2>&1 && [ -d "$state_dir" ]; then
                     (.tmuxSessionId | type) == "string" and
                     (.pane | type) == "string" and
                     (.updatedAt | type) == "number" and
+                    (.owner | type) == "number" and
                     (.status == "progressing" or .status == "finished" or .status == "stopped")
                 )
-                | [.tmuxSessionId, .pane, .status, .updatedAt]
+                | [.tmuxSessionId, .pane, .status, .updatedAt, .owner]
                 | @tsv
-            ' "$@" 2>/dev/null | tr '\n' '|' || true
+            ' "$@" 2>/dev/null |
+                while IFS="$(printf '\t')" read -r session pane status updated owner; do
+                    # A force-quit or crash cannot leave a pane orange forever.
+                    if ! kill -0 "$owner" 2>/dev/null; then status=stopped; fi
+                    printf '%s\t%s\t%s\t%s\n' "$session" "$pane" "$status" "$updated"
+                done | tr '\n' '|' || true
         )"
     fi
 fi

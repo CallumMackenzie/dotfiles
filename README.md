@@ -1,163 +1,111 @@
 # dotfiles
 
 Declarative macOS configuration for Zsh, Neovim, tmux, Hammerspoon, WezTerm,
-Git, Vimium C, and the local OpenClaw tmux-completion integration. Nix Darwin
-and Home Manager are the primary restoration path; the legacy bootstrap remains
-temporarily available as a pre-Nix fallback.
+Git, Vimium C, and Pi. Nix Darwin and Home Manager are the primary restoration
+path; the legacy bootstrap remains available as a pre-Nix fallback.
 
 ## What is tracked
 
-- `zsh/` — interactive and login-shell configuration
-- `nvim/` — Neovim configuration, plugin lockfile, and cheatsheet
-- `tmux/` — tmux configuration and completion-inbox binding
-- `wezterm/` — terminal configuration and background asset
-- `hammerspoon/` — application launcher shortcuts
-- `git/` — Git defaults
-- `vimium-c/` — browser extension export
-- `openclaw/plugins/` — local OpenClaw completion hook
-- `python/` — direct Python dependencies for Neovim notebooks
-- `Brewfile` — command-line and application dependencies
-- `scripts/bootstrap.sh` — conservative fresh-machine bootstrap
-- `flake.nix` / `flake.lock` — pinned Nix entry point and dependencies
-- `hosts/` — per-Mac configuration
-- `modules/` — nix-darwin, Home Manager, and Homebrew modules
+- `zsh/`, `nvim/`, `tmux/`, `wezterm/`, `hammerspoon/`, `git/`, `vimium-c/`
+- `pi/AGENTS.md`, `pi/extensions/tmux-notify.ts`, `pi/model-defaults.json`
+- `pi/mcp.json.example` and `pi/mcp/` — non-secret MCP configuration and server code
+- `scripts/pi-tmux-status` — per-pane Pi status for WezTerm
+- `python/`, `Brewfile`, `scripts/bootstrap.sh`, `flake.nix`, `hosts/`, `modules/`
 
 ## Nix restoration
 
-Install the signed Determinate Nix package from:
-
-<https://install.determinate.systems/determinate-pkg/stable/Universal>
-
-Then clone this repository and perform the first activation:
+Install the signed Determinate Nix package from
+<https://install.determinate.systems/determinate-pkg/stable/Universal>, clone
+this repository, then:
 
 ```sh
 sudo nix run nix-darwin -- switch --flake .#MacBook-Pro
-```
-
-Subsequent activations use the installed command:
-
-```sh
+# later activations:
 sudo darwin-rebuild switch --flake .#MacBook-Pro
 ```
 
-The configuration declaratively manages:
-
-- CLI packages and language runtimes through Nix
-- WezTerm and Hammerspoon through declarative Homebrew casks
-- Zsh, Git, tmux, Neovim, WezTerm, Hammerspoon, and OpenClaw plugin links
-- Neovim's Python/Jupyter environment
-- the pinned `tmux-notify-jump` source
-- selected keyboard, Dock, and Finder preferences
-
-OpenClaw itself remains externally installed because its current release can
-move ahead of Nixpkgs. Home Manager registers and enables the tracked plugin
-when an `openclaw` executable is present. Restart the OpenClaw Gateway after an
-activation that changes the plugin.
-
-The host name in this flake is `MacBook-Pro`. Add another directory under
-`hosts/` and another `darwinConfigurations` entry for additional Macs.
+Pi itself is installed separately. Home Manager links the Pi extension,
+user instructions, MCP wrapper scripts and status helper, merges model defaults
+into Pi's existing settings (without replacing installed packages/device ID),
+and installs the Titan MCP dependency tree. `gpt-5.6-sol` remains available for
+manual model switching; Pi does not use OpenClaw's automatic fallback chain. `~/.pi/agent/mcp.json` is created
+from the example only when absent and is never replaced; edit it locally.
+The host name in this flake is `MacBook-Pro`. Add a new host configuration for
+additional Macs.
 
 ## Legacy bootstrap
 
-Install Homebrew, clone this repository anywhere, then run:
+Install Homebrew, clone anywhere and run `./scripts/bootstrap.sh`.
+It installs `Brewfile`, links configuration conservatively (refuses to replace
+existing paths), installs pinned `tmux-notify-jump`, creates private zsh config,
+sets up the Neovim Python environment, and configures Pi files and MCP servers.
+Pi itself must be installed separately.
 
-```sh
-./scripts/bootstrap.sh
-```
+## Pi and tmux notifications
 
-The bootstrap script:
+Launch **plain `pi`** in a tmux pane. The Pi extension detects `TMUX_PANE`,
+records the tmux socket/session/pane under `~/.local/state/pi-tmux/` and marks
+runs progressing, finished or stopped. It sends the last response preview
+(120 characters, suppressing `NO_REPLY`) via `tmux-notify-jump` only after Pi
+has fully settled, not between retries or follow-ups. Failed runs receive an
+attention notification. Exit, abort and session shutdown clear the running
+status. Launches outside tmux and headless Pi runs are not tracked.
 
-1. Installs packages from `Brewfile`.
-2. Creates symlinks for the tracked configuration files.
-3. Creates an empty mode-`600` `~/.zshrc.private` when one is absent.
-4. Installs the pinned `tmux-notify-jump` revision.
-5. Creates `~/.venvs/neovim` and installs its direct Python dependencies.
-6. Links and enables the OpenClaw tmux notification plugin when OpenClaw is
-   already installed.
+- Clicking a macOS notification jumps to the originating WezTerm/tmux pane.
+- Background completions enter the tmux inbox; `Prefix + N` jumps to the next.
+- WezTerm shows every tmux session. Orange `●` is progressing, pink `✓` is
+  finished with unread notification, green `✓` is viewed, and gray `○` is
+  stopped/unmapped. The current attached session is underlined.
+- Allow Homebrew `terminal-notifier` under **System Settings → Notifications**.
+  Pi explicitly prefers `/opt/homebrew/bin` when calling the notifier: the
+  older Nix `terminal-notifier` 2.0 uses a legacy macOS notification API that
+  macOS rejects when the newer Homebrew app has the same bundle ID.
 
-It refuses to replace existing configuration paths. Move or back up old files
-before running it on a machine that already has dotfiles.
+Do **not** install the separate upstream `tmux-notify-jump` Pi extension as
+well: it would deliver duplicate notifications. The upstream notifier binary
+and tmux inbox configuration are reused here.
 
-OpenClaw itself is intentionally not installed by this bootstrap script. If it
-is installed later, rerun the script to register the tracked local plugin, then
-restart the Gateway.
+## Private configuration and MCP
 
-## Private configuration
+`~/.zshrc.private`, `~/.pi/agent/mcp.json`, `~/.pi/agent/auth.json`,
+`~/.pi/agent/memory/`, `~/.config/pi/credentials/`, Pi sessions, Keychain
+passwords and runtime state must never be committed. Tracked MCP files contain
+only non-secret code and an example config. The example config defines:
 
-Machine-private shell settings belong in `~/.zshrc.private`. The tracked
-`.zshrc` loads it automatically, but its contents must never be committed.
-Use macOS Keychain or another protected secret store for credentials whenever
-possible; a mode-`600` shell file is still plaintext.
+- `obsidian-notes`, `obsidian-jobsearch`, `obsidian-content` (`mcpvault`)
+- `google-drive` (compatibility adapter; service-account JSON at
+  `~/.config/pi/credentials/google-service-account.json`)
+- `titan-imap` (local Node server; password in Keychain service `pi-titan-imap`
+  with account `callum@camackenzie.com`)
+- `mcp-neovim-server` (`/tmp/nvim.sock`, shell commands disallowed)
+- `leetcode` (Keychain service `pi-leetcode-session`, account `pi`)
+- `course-tracker` (Keychain service `pi-course-tracker-mcp`, account `callum`;
+  only four read-only assessment/schedule tools exposed)
 
-The following state is intentionally excluded:
+On a new machine install credentials separately (never place secrets in the
+repo), then run `pi mcp list` or `/mcp` to inspect connections. MCP tools use
+Pi's default `codemode` exposure except for the filtered course tracker.
+There is no gateway, messaging channel, heartbeat or model-embedding memory
+service. The previous assistant's personal memory can be kept privately under
+`~/.pi/agent/memory/` and read only when relevant; it is not a Pi session.
 
-- `~/.zshrc.private`
-- OpenClaw's main configuration, credentials, sessions, and pane mappings
-- GitHub and cloud-provider authentication files
-- downloaded plugins, caches, logs, and application runtime state
+## Other applications
 
-## OpenClaw tmux notifications
-
-Launch a TUI with `oc` from inside tmux. The launcher derives a stable session
-name from the tmux session, window, and pane and records the originating pane.
-When a turn finishes, the tracked OpenClaw hook calls `tmux-notify-jump`.
-
-Expected behavior:
-
-- macOS shows a `<tmux-session>` notification whose body previews
-  the first 120 characters of the final assistant response. Responses whose
-  normalized body is exactly `NO_REPLY` do not create a notification.
-- Clicking the notification returns to the originating WezTerm/tmux pane.
-- Background completions appear in tmux's inbox.
-- `Prefix + N` jumps to the next pane needing attention.
-- WezTerm shows every local tmux session in its status strip, including while
-  the active terminal is inside tmux. Each mapped OpenClaw pane gets an icon:
-  pink `✓` means a finished turn has an unread notification, green `✓` means
-  the finished pane has been viewed, orange `●` means a turn is running, and
-  gray `○` means no OpenClaw mapping exists, the TUI stopped, or its last turn
-  failed. For example, `● ✓ env` means one pane is running and another has
-  finished. A session name is pink while any finished pane has an unread
-  notification. `Prefix + N` jumps to the next unread notification, changing
-  its pink check and session name to green when the destination pane is selected.
-
-The session name uses the aggregate color. A progressing OpenClaw pane takes
-priority over an unread pane, which takes priority over viewed finished and
-stopped panes. The session attached to the current WezTerm pane is underlined;
-windows without an attached tmux client have no underlined session. Existing
-TUIs must be relaunched with `oc` once after installing this configuration so
-their mappings include the tmux session identifier.
-
-Allow `terminal-notifier` under **System Settings → Notifications**. Automatic
-inside-tmux detection and pane routing are local-machine features.
-
-## Neovim
-
-Plugins restore automatically through `lazy.nvim` and `lazy-lock.json`.
-Notebook support uses the `neovim` Python environment created by the bootstrap
-script. LaTeX and terminal PDF previewing depend on Tectonic, Ghostscript, and
-ImageMagick from the `Brewfile`.
-
-## Vimium C
-
-Import `vimium-c/settings.json` through Vimium C's **Backup and Restore** page.
+Neovim plugins restore via `lazy.nvim` and `lazy-lock.json`; its Python/Jupyter
+environment is provided by Nix or the bootstrap. LaTeX/PDF preview uses
+Tectonic, Ghostscript and ImageMagick. Import `vimium-c/settings.json` through
+Vimium C's **Backup and Restore** page.
 
 ## Validation
 
-Useful checks after restoration:
-
 ```sh
 zsh -n ~/.zshrc ~/.zprofile
+bash -n scripts/*.sh
+pi mcp list
 tmux source-file ~/.tmux.conf
-openclaw config validate
-openclaw plugins list
+~/.local/bin/pi-tmux-status
+darwin-rebuild switch --flake .#MacBook-Pro
 ```
 
-Evaluate the complete Darwin configuration without activating it:
-
-```sh
-nix eval .#darwinConfigurations.MacBook-Pro.config.system.build.toplevel.drvPath
-```
-
-The `Brewfile`, Python requirements, and bootstrap script remain only as a
-rollback path until the first successful Nix activation. They can be removed
-after that activation has been verified across a reboot.
+`Brewfile`, Python requirements, and bootstrap remain a rollback path until a
+Nix activation has been verified across a reboot.

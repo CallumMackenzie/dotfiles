@@ -1,7 +1,6 @@
 { config, inputs, lib, pkgs, username, ... }:
 let
   homeDirectory = "/Users/${username}";
-  openclawPlugin = ../openclaw/plugins/openclaw-tmux-notify;
   managedLink = source: { inherit source; force = true; };
   neovimPython = pkgs.python3.withPackages (pythonPackages: with pythonPackages; [
     ipykernel
@@ -27,7 +26,6 @@ in
       ripgrep
       ruby
       tectonic
-      terminal-notifier
       tmux
     ];
 
@@ -49,14 +47,30 @@ in
         force = true;
       };
 
-      ".local/bin/openclaw-tmux-status" = {
-        source = ../scripts/openclaw-tmux-status;
+      ".local/bin/pi-tmux-status" = {
+        source = ../scripts/pi-tmux-status;
         executable = true;
         force = true;
       };
 
-      ".openclaw/local-plugins/openclaw-tmux-notify" =
-        managedLink openclawPlugin;
+      ".pi/agent/AGENTS.md" = managedLink ../pi/AGENTS.md;
+      ".pi/agent/extensions/tmux-notify.ts" =
+        managedLink ../pi/extensions/tmux-notify.ts;
+      ".local/bin/pi-mcp-google-drive-compat.mjs" = {
+        source = ../pi/mcp/mcp-google-drive-compat.mjs;
+        executable = true;
+        force = true;
+      };
+      ".local/bin/pi-leetcode-mcp-keychain" = {
+        source = ../pi/mcp/leetcode-mcp-keychain;
+        executable = true;
+        force = true;
+      };
+      ".local/bin/pi-course-tracker-mcp" = {
+        source = ../pi/mcp/course-tracker-mcp;
+        executable = true;
+        force = true;
+      };
     };
   };
 
@@ -75,32 +89,17 @@ in
     fi
   '';
 
-  home.activation.configureOpenClawTmuxNotify =
-    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      export PATH="${pkgs.nodejs}/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
-      openclaw_bin=""
-      if [[ -x /opt/homebrew/bin/openclaw ]]; then
-        openclaw_bin=/opt/homebrew/bin/openclaw
-      elif command -v openclaw >/dev/null 2>&1; then
-        openclaw_bin="$(command -v openclaw)"
-      fi
+  # Pi owns settings.json (device ID, installed packages and UI state). Merge
+  # only reproducible model defaults instead of replacing the whole file.
+  home.activation.configurePiModels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    export PATH="${pkgs.jq}/bin:${pkgs.coreutils}/bin:/usr/bin:/bin:$PATH"
+    $DRY_RUN_CMD ${pkgs.bash}/bin/bash ${../scripts/configure-pi-models.sh} \
+      "${homeDirectory}/.pi/agent/settings.json" ${../pi/model-defaults.json}
+  '';
 
-      if [[ -n "$openclaw_bin" ]]; then
-        plugin_path="${homeDirectory}/.openclaw/local-plugins/openclaw-tmux-notify"
-        paths_json="$("$openclaw_bin" config get plugins.load.paths 2>/dev/null || printf '[]')"
-        merged_paths="$(printf '%s' "$paths_json" | ${pkgs.jq}/bin/jq \
-          --arg stable "$plugin_path" \
-          'if type == "array" then . else [] end
-           | map(select((startswith("/nix/store/") and test("openclaw.*tmux.*notify"; "i")) | not))
-           | if index($stable) then . else . + [$stable] end')"
-
-        $DRY_RUN_CMD "$openclaw_bin" config set plugins.load.paths \
-          "$merged_paths" --strict-json
-        $DRY_RUN_CMD "$openclaw_bin" config set \
-          plugins.entries.openclaw-tmux-notify.enabled true --strict-json
-        $DRY_RUN_CMD "$openclaw_bin" config set \
-          'plugins.entries.openclaw-tmux-notify.hooks.allowConversationAccess' \
-          true --strict-json
-      fi
-    '';
+  home.activation.configurePiMcp = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    export HOME="${homeDirectory}"
+    export PATH="${pkgs.nodejs}/bin:${pkgs.coreutils}/bin:/usr/bin:/bin:$PATH"
+    $DRY_RUN_CMD ${pkgs.bash}/bin/bash ${../scripts/setup-pi-mcp.sh} ${../pi}
+  '';
 }

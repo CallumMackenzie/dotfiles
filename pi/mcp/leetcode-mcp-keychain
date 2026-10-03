@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+LEETCODE_SESSION="$(security find-generic-password -a pi -s pi-leetcode-session -w)"
+export LEETCODE_SESSION
+exec npx -y @jinzcdev/leetcode-mcp-server --site global

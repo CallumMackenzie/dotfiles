@@ -1,0 +1,13 @@
+{
+  "name": "titan-imap-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "titan-imap-mcp": "./server.mjs"
+  },
+  "dependencies": {
+    "imapflow": "^1.3.5",
+    "mailparser": "^3.9.9"
+  }
+}

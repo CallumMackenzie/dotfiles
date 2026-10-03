@@ -2,6 +2,7 @@
 {
   homebrew = {
     enable = true;
+    brews = [ "terminal-notifier" ];
     casks = [
       "hammerspoon"
       "wezterm"

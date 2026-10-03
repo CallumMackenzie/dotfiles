@@ -1,0 +1,39 @@
+#!/bin/zsh
+
+set -u
+
+runtime_dir=$(/usr/bin/mktemp -d /tmp/pi-course-tracker-mcp.XXXXXX) || exit 1
+header_pipe="${runtime_dir}/headers"
+writer_pid=""
+
+cleanup() {
+  if [[ -n "${writer_pid}" ]]; then
+    /bin/kill "${writer_pid}" 2>/dev/null || true
+  fi
+  /bin/rm -f -- "${header_pipe}"
+  /bin/rmdir "${runtime_dir}" 2>/dev/null || true
+}
+
+trap cleanup EXIT INT TERM HUP
+/usr/bin/mkfifo -m 600 "${header_pipe}" || exit 1
+
+(
+  {
+    /usr/bin/printf 'Authorization: Bearer '
+    /usr/bin/security find-generic-password \
+      -a callum \
+      -s pi-course-tracker-mcp \
+      -w
+  } > "${header_pipe}"
+) &
+writer_pid=$!
+
+/usr/bin/env npx -y mcp-remote@0.14.3 \
+  https://api-s4ovvbjiza-uw.a.run.app/api/mcp \
+  --transport http-only \
+  --header-file "${header_pipe}"
+bridge_status=$?
+
+wait "${writer_pid}" 2>/dev/null || true
+writer_pid=""
+exit "${bridge_status}"

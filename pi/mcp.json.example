@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "obsidian-notes": {
+      "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "/Users/callum/Downloads/Notes"],
+      "description": "Notes vault"
+    },
+    "obsidian-jobsearch": {
+      "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "/Users/callum/Downloads/JobSearch"],
+      "description": "JobSearch vault"
+    },
+    "obsidian-content": {
+      "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "/Users/callum/Downloads/Content"],
+      "description": "Content vault"
+    },
+    "google-drive": {
+      "command": "node", "args": ["/Users/callum/.local/bin/pi-mcp-google-drive-compat.mjs"],
+      "env": {
+        "GOOGLE_SERVICE_ACCOUNT_KEY": "/Users/callum/.config/pi/credentials/google-service-account.json",
+        "MCP_MODE": "stdio", "LOG_LEVEL": "info"
+      }
+    },
+    "titan-imap": {
+      "command": "node", "args": ["/Users/callum/.local/share/pi-mcp/titan/server.mjs"],
+      "env": {
+        "TITAN_IMAP_HOST": "imap.titan.email", "TITAN_IMAP_PORT": "993",
+        "TITAN_IMAP_SECURE": "true", "TITAN_IMAP_KEYCHAIN_SERVICE": "pi-titan-imap",
+        "TITAN_IMAP_USER": "callum@camackenzie.com"
+      }
+    },
+    "mcp-neovim-server": {
+      "command": "npx", "args": ["-y", "mcp-neovim-server"],
+      "env": { "NVIM_SOCKET_PATH": "/tmp/nvim.sock", "ALLOW_SHELL_COMMANDS": "false" }
+    },
+    "leetcode": {
+      "command": "/Users/callum/.local/bin/pi-leetcode-mcp-keychain",
+      "timeout": 120
+    },
+    "course-tracker": {
+      "command": "/Users/callum/.local/bin/pi-course-tracker-mcp",
+      "timeout": 30,
+      "exposure": "hidden",
+      "toolExposure": {
+        "list_assessments": "codemode", "get_assessment": "codemode",
+        "get_daily_schedule": "codemode", "list_upcoming_assessments": "codemode"
+      }
+    }
+  }
+}
