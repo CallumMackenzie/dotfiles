@@ -127,7 +127,7 @@ require("lazy").setup({
       vim.g.vimtex_view_method = "general"
       vim.g.vimtex_view_automatic = 0
       vim.g.vimtex_view_general_viewer = "open"
-      vim.g.vimtex_view_general_options = "-a Skim @pdf"
+      vim.g.vimtex_view_general_options = "-a Preview @pdf"
       vim.g.vimtex_compiler_method = "tectonic"
       vim.g.vimtex_quickfix_mode = 0
     end,
