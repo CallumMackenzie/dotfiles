@@ -56,6 +56,8 @@ in
       ".pi/agent/AGENTS.md" = managedLink ../pi/AGENTS.md;
       ".pi/agent/extensions/tmux-notify.ts" =
         managedLink ../pi/extensions/tmux-notify.ts;
+      ".pi/agent/extensions/ascii-splash.ts" =
+        managedLink ../pi/extensions/ascii-splash.ts;
       ".local/bin/pi-mcp-google-drive-compat.mjs" = {
         source = ../pi/mcp/mcp-google-drive-compat.mjs;
         executable = true;

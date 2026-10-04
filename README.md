@@ -7,7 +7,7 @@ path; the legacy bootstrap remains available as a pre-Nix fallback.
 ## What is tracked
 
 - `zsh/`, `nvim/`, `tmux/`, `wezterm/`, `hammerspoon/`, `git/`, `vimium-c/`
-- `pi/AGENTS.md`, `pi/extensions/tmux-notify.ts`, `pi/model-defaults.json`
+- `pi/AGENTS.md`, `pi/extensions/{tmux-notify,ascii-splash}.ts`, `pi/model-defaults.json`
 - `pi/mcp.json.example` and `pi/mcp/` — non-secret MCP configuration and server code
 - `scripts/pi-tmux-status` — per-pane Pi status for WezTerm
 - `python/`, `Brewfile`, `scripts/bootstrap.sh`, `flake.nix`, `hosts/`, `modules/`
@@ -24,7 +24,7 @@ sudo nix run nix-darwin -- switch --flake .#MacBook-Pro
 sudo darwin-rebuild switch --flake .#MacBook-Pro
 ```
 
-Pi itself is installed separately. Home Manager links the Pi extension,
+Pi itself is installed separately. Home Manager links the Pi extensions,
 user instructions, MCP wrapper scripts and status helper, merges model defaults
 into Pi's existing settings (without replacing installed packages/device ID),
 and installs the Titan MCP dependency tree. `gpt-5.6-sol` remains available for
@@ -40,6 +40,13 @@ It installs `Brewfile`, links configuration conservatively (refuses to replace
 existing paths), installs pinned `tmux-notify-jump`, creates private zsh config,
 sets up the Neovim Python environment, and configures Pi files and MCP servers.
 Pi itself must be installed separately.
+
+## Pi splash
+
+`pi/extensions/ascii-splash.ts` replaces Pi's startup header with an animated
+ASCII logo. Its moving Voronoi color regions follow the active light/dark theme;
+the timer stops when the session closes. In terminals narrower than 72 columns,
+it shows a compact `C1` instead.
 
 ## Pi and tmux notifications
 
