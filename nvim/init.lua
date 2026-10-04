@@ -129,6 +129,9 @@ require("lazy").setup({
       vim.g.vimtex_view_general_viewer = "open"
       vim.g.vimtex_view_general_options = "-a Preview @pdf"
       vim.g.vimtex_compiler_method = "tectonic"
+      vim.g.vimtex_compiler_tectonic = {
+        options = { "--keep-logs", "--synctex", "-Z", "shell-escape" },
+      }
       vim.g.vimtex_quickfix_mode = 0
     end,
   },

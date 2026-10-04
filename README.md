@@ -55,14 +55,16 @@ records the tmux socket/session/pane under `~/.local/state/pi-tmux/` and marks
 runs progressing, finished or stopped. It sends the last response preview
 (120 characters, suppressing `NO_REPLY`) via `tmux-notify-jump` only after Pi
 has fully settled, not between retries or follow-ups. Failed runs receive an
-attention notification. Exit, abort and session shutdown clear the running
-status. Launches outside tmux and headless Pi runs are not tracked.
+attention notification. Aborted turns show a gray `○` while Pi remains open;
+closing Pi removes its pane icon entirely. Stale mappings from crashes are
+ignored. Launches outside tmux and headless Pi runs are not tracked.
 
 - Clicking a macOS notification jumps to the originating WezTerm/tmux pane.
 - Background completions enter the tmux inbox; `Prefix + N` jumps to the next.
 - WezTerm shows every tmux session. Orange `●` is progressing, pink `✓` is
   finished with unread notification, green `✓` is viewed, and gray `○` is
-  stopped/unmapped. The current attached session is underlined.
+  stopped; panes without a running Pi have no icon. The current attached session
+  is underlined.
 - Allow Homebrew `terminal-notifier` under **System Settings → Notifications**.
   Pi explicitly prefers `/opt/homebrew/bin` when calling the notifier: the
   older Nix `terminal-notifier` 2.0 uses a legacy macOS notification API that

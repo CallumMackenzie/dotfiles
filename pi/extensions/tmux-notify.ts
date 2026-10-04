@@ -1,7 +1,7 @@
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -103,5 +103,20 @@ export default function (pi: ExtensionAPI) {
     child.on("error", (error) => console.error("pi-tmux: notifier failed", error));
     child.unref();
   });
-  pi.on("session_shutdown", async () => { await update("stopped"); });
+  pi.on("session_shutdown", async () => {
+    if (!mapping || !mappingPath) return;
+    try {
+      const current = JSON.parse(await readFile(mappingPath, "utf8")) as Mapping;
+      // A newer Pi in this pane may have replaced our entry already.
+      if (current.owner === process.pid && current.pane === mapping.pane && current.socket === mapping.socket) {
+        await unlink(mappingPath);
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        console.error("pi-tmux: unable to remove pane", error);
+      }
+    }
+    mapping = undefined;
+    mappingPath = undefined;
+  });
 }

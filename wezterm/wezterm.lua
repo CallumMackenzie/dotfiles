@@ -124,6 +124,7 @@ wezterm.on("update-status", function(window, pane)
     unread = dashboard_colors.pink,
     progressing = dashboard_colors.orange,
     stopped = dashboard_colors.stopped,
+    none = dashboard_colors.muted,
   }
   local icons = {
     finished = "✓",
@@ -145,10 +146,9 @@ wezterm.on("update-status", function(window, pane)
       end
       local icons_for_session = {}
       for pane_state in pane_states:gmatch("[^,]+") do
-        table.insert(icons_for_session, pane_state)
-      end
-      if #icons_for_session == 0 then
-        table.insert(icons_for_session, "stopped")
+        if pane_state ~= "none" then
+          table.insert(icons_for_session, pane_state)
+        end
       end
       table.insert(sessions, {
         state = state,

@@ -5,7 +5,7 @@
 # to that tmux client active. Ignore stale aliases and missing panes, reduce
 # aliases to the newest status per pane, overlay unread completions from
 # tmux-notify-jump, then aggregate with priority
-# progressing > unread > finished > stopped.
+# progressing > unread > finished > stopped. Panes without a live Pi have no icon.
 
 set -eu
 
@@ -40,8 +40,8 @@ if command -v jq >/dev/null 2>&1 && [ -d "$state_dir" ]; then
                 | @tsv
             ' "$@" 2>/dev/null |
                 while IFS="$(printf '\t')" read -r session pane status updated owner; do
-                    # A force-quit or crash cannot leave a pane orange forever.
-                    if ! kill -0 "$owner" 2>/dev/null; then status=stopped; fi
+                    # Ignore stale mappings left by a crash or force-quit.
+                    if ! kill -0 "$owner" 2>/dev/null; then continue; fi
                     printf '%s\t%s\t%s\t%s\n' "$session" "$pane" "$status" "$updated"
                 done | tr '\n' '|' || true
         )"
@@ -128,9 +128,9 @@ esac
         }
         {
             state = states[$1]
-            if (state == "") state = "stopped"
+            if (state == "") state = "none"
             icons = pane_states[$1]
-            if (icons == "") icons = "stopped"
+            if (icons == "") icons = "none"
             active = ($1 == active_session_id ? "active" : "inactive")
             print state "\t" $2 "\t" icons "\t" active
         }
